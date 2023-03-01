@@ -9,6 +9,7 @@ import com.example.authStarter.payload.response.MessageResponse;
 import com.example.authStarter.payload.response.UserInfoResponse;
 import com.example.authStarter.repository.RoleRepository;
 import com.example.authStarter.repository.UserRepository;
+import com.example.authStarter.security.jwt.JwtUtils;
 import com.example.authStarter.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
