@@ -15,7 +15,6 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
-
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     @Value("${klarr.app.jwtSecret}")
@@ -27,45 +26,52 @@ public class JwtUtils {
     @Value("${klarr.app.jwtCookieName}")
     private String jwtCookie;
 
-    // get JWT from cookies by cookie name
+
+    //get JWT from Cookies by Cookie name
     public String getJwtFromCookies(HttpServletRequest request) {
-       Cookie cookie = WebUtils.getCookie(request, null);
-       if (cookie != null) {
-           return cookie.getValue();
-       } else {
-           return null;
-       }
+        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
+        if (cookie != null) {
+            return cookie.getValue();
+        } else {
+            return null;
+        }
     }
 
-    // generate response cookie containing JWT from username, data, exporation, secret
+    // generate a Cookie containing JWT from username, date, expiration, secret
     public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
         String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-        ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt).path("/api")
-                .maxAge(24 * 60 * 60)
-                .httpOnly(true).build();
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build();
         return cookie;
     }
 
-    // get username from jwt
-    public String getUsernameFromJwtToken(String token ) {
+    // return Cookie with null value (used for clean Cookie)
+    public ResponseCookie getCleanJwtCookie() {
+        ResponseCookie cookie = ResponseCookie.from(jwtCookie, null).path("/api").build();
+        return cookie;
+    }
+
+    // get username from JWT
+    public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // validate jwt token
+    // validate a JWT with a secret
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            return true;
         } catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            logger.error("JWT token expired: {}", e.getMessage());
+            logger.error("JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
             logger.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
+
         return false;
     }
 
